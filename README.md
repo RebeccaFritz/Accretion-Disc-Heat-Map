@@ -1,2 +1,2 @@
-#ParticleCollisionBinaryStars
-This project was created as E. Jacoby and I's final project for our Computational Physics class in Fall 2024. We collaborated with Dr. Richard Olenick (check spelling) to develop a simulation of gas-particle collisions and temperatures (would they be gas?) in the accretion disk of a binary star system. We implemented Runge-Kutta algorithms in Vpython to determine the velocities and positions of the stars and particles.
+# ParticleCollisionBinaryStars
+This project was created as E. Jacoby and I's final project for our Computational Physics class in Fall 2024. We collaborated with Dr. Richard Olenick (check spelling) to develop a simulation of gas-particle collisions and temperatures in the accretion disk of a binary star system. We implemented Runge-Kutta algorithms in Vpython to determine the velocities and positions of the stars and particles modeled as spherical points.
