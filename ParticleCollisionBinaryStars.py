@@ -12,13 +12,13 @@ autoscale = 1
 # Define Globals
 G  = 6.67E-11 # gravitational constant
 P = ... # orbital period
-AMBIENT_COLOR # color of particles when ambient temp 
+MID_COLOR = vp.color.white # color of particles when ambient temp 
 """ Eventually:
 HOT_COLOR # color of particles when hot
 COLD_COLOR # color of particles when cold
 """
 h = # time step
-L1 # distance
+L1 = # distance to Lagrange Point 1
 
 # create Objects
 starA """ If we don't want to animate the stars we can just put their mass and position and such in variables"""
@@ -31,7 +31,8 @@ accretionDisk = """ do we still want to do this? could do two transparent cylind
 
 # a function to create particles
 ## vector, vector --> sphere
-""" I already created this """
+def create_particle(pos, vel):
+    return vp.sphere(pos = pos, vel = vel, mass = 1, radius = 1, color = MID_COLOR)
 
 # ancillaries
 particles = [] # list of particles
