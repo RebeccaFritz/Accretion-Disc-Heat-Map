@@ -63,7 +63,14 @@ def rkStar(star):
 
     star.vel += (k1v + 2.0*k2v + 2.0*k3v + k4v)/6.0
     star.pos += (k1x + 2.0*k2x + 2.0*k3x + k4x)/6.0
+    
 
+# a function to remove particles from the particle_list and to increase starB's mass
+## ... --> ...
+"""
+def removeParticle(...):
+    return
+"""
 
 # a function to add particles to the particle_list and to decrease starA's mass
 ## void --> void
@@ -84,10 +91,37 @@ def AddParticle():
 
 # a function to check if the particles have collided
 ## ... --> ...
-"""
-def particleCol(...):
-    return
-"""
+def particleCol():
+    particleDiameter = 4E6*2
+    collided = [] # list of indicies of the particles for which the collisions have been calculated
+    
+    # this does check each particle pair for collisions, but it is so slow it breaks the animation
+    for i in range(0, len(particle_list)):         
+        if i not in collided: # make sure that the particle at this index has not already had a collision run on it
+            particle1 = particle_list[i]
+        
+            collisions = [] # list of indicies of currently colliding particles  
+            collisions.append(i) # the index of colliding particle1
+            for j in range(i+1, len(particle_list)):
+                particle2 = particle_list[j]
+                    
+                if (particle2.pos.x - particleDiameter <= particle1.pos.x <= particle2.pos.x + particleDiameter) \
+                        and (particle2.pos.y - particleDiameter <= particle1.pos.y <= particle2.pos.y + particleDiameter) \
+                            and (particle2.pos.z - particleDiameter <= particle1.pos.z <= particle2.pos.z + particleDiameter):
+                    collisions.append(j) # the index of colliding particle2
+                    
+            # collisions now has the indicies of all the particles colliding with particle1
+            if len(collisions) > 1:
+                #print('collisions at' + collisions) # for testing purposes
+                # calculate particle collision for all particles at the indicies in the collisions list
+                
+                # when done colliding add collisions indicies to collided indices list
+                collided.extend(collisions) 
+                #print('collided' + collided) # testing purposes
+        i += 1
+        
+    
+
 
 # a function to run the Runge-Kutta alg on particles       # from the sample code
 ## void --> void
@@ -118,6 +152,8 @@ def particleTemp(...):
     return
 """
 
+#done = 0
+
 # run animation
 while True:
     r = mag(starA.pos - starB.pos)
@@ -127,9 +163,17 @@ while True:
     rkStar(starB)
     
     rkParticles()
-    if len(particle_list) < 2000: # this is not ultimately how we will do this
+    if len(particle_list) < 10:#2000: # this is not ultimately how we will do this
         AddParticle()
     
     starA.trail.append(pos=starA.pos)
     starB.trail.append(pos=starB.pos)
+
+    #while not done: # to run the collision only once
+     #   particleCol()
+      #  done = 1
+    
+    particleCol()
+    
     rate(500) 
+    
