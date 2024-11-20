@@ -7,6 +7,7 @@ scene = canvas(title = 'Particle Collisions in a Binary Star System', color = co
 
 # Define Globals
 G  = 6.67E-11 # gravitational constant
+
 AU = 1.5E11 # astronomical unit
 YEAR = 365.25*24*60*60 # year in seconds
 MS = 1.988400e20 # mass of the sun 
@@ -20,6 +21,7 @@ STARA_COLOR = vec(0.98, 0.98, 0.78) #rgb(250,250,200)
 STARB_COLOR = vec(0.98, 0.94, 0.59 ) #rgb(250,240,150)
 P_RADIUS = 4e6 # particle radius
 
+
 h = 2.0 # time step                            # from sample code
 L1 = 3.69E8 # distance to Lagrange Point 1            # from sample code
 L2= 2.11e8                                             # from sample code
@@ -32,9 +34,11 @@ starA.trail = curve(pos=starA.pos, color=starA.color) # do we want trails
 starB.trail = curve(pos=starB.pos, color=starB.color)
 # accretionDisk = # do we still want to do this? could do two transparent cylinders compounded together
 
+
 # set initial velocities
 starB.vel = 4.0*vector(0,+6.78e4,0)             # from sample code
 starA.vel = 4.0*vector(0,-6.78e4,0)*0.25        # from sample code
+
 
 # ancillaries
 t = 0 # time
