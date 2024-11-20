@@ -18,6 +18,7 @@ HIGH_COLOR = vec(0.78, 0.00, 0.00) # color of particles when hot: rgb(200, 000, 
 LOW_COLOR = vec(0.98, 0.78, 0.00) # color of particles when cold: rgb(250, 200, 000)
 STARA_COLOR = vec(0.98, 0.98, 0.78) #rgb(250,250,200)
 STARB_COLOR = vec(0.98, 0.94, 0.59 ) #rgb(250,240,150)
+P_RADIUS = 4e6 # particle radius
 
 h = 2.0 # time step                            # from sample code
 L1 = 3.69E8 # distance to Lagrange Point 1            # from sample code
@@ -32,18 +33,17 @@ starB.trail = curve(pos=starB.pos, color=starB.color)
 # accretionDisk = # do we still want to do this? could do two transparent cylinders compounded together
 
 # set initial velocities
-starA.vel = 4.0*vector(0,-6.78e4,0)*0.25        # from sample code
 starB.vel = 4.0*vector(0,+6.78e4,0)             # from sample code
+starA.vel = 4.0*vector(0,-6.78e4,0)*0.25        # from sample code
 
 # ancillaries
 t = 0 # time
 particle_list = []
-otherstar = starB
 
 # a function to determine the acceleration of a star
 ## ... --> ...
 def accStar(starpos):
-    return -G*otherstar.mass*(starpos - otherstar.pos)/r**3
+    return -G*starother.mass*(starpos-starother.pos)/r**3
 
 # a function to run the Runge-Kutta alg on a star
 ## ... --> ...
@@ -79,7 +79,7 @@ def AddParticle():
     # This may not be how we want to create particles
     Omega = 2.0*pi/P                                                            # from sample code
     for i in range(0, 10):
-        particle = sphere(mass = H_MASS*1e3, radius = 4E6, color = MID_COLOR)
+        particle = sphere(mass = H_MASS*1e3, radius = P_RADIUS, color = MID_COLOR)
         particle.pos = starA.pos +0.6367*(starB.pos-starA.pos)                      # from sample code
         # set initial velocities
         particle.vel = vector(0,0,0)                                           # from sample code
@@ -92,7 +92,7 @@ def AddParticle():
 # a function to check if the particles have collided
 ## ... --> ...
 def particleCol():
-    particleDiameter = 4E6*2
+    particleDiameter = P_RADIUS*2
     collided = [] # list of indicies of the particles for which the collisions have been calculated
     
     # this does check each particle pair for collisions, but it is so slow it breaks the animation
@@ -112,12 +112,10 @@ def particleCol():
                     
             # collisions now has the indicies of all the particles colliding with particle1
             if len(collisions) > 1:
-                #print('collisions at' + collisions) # for testing purposes
                 # calculate particle collision for all particles at the indicies in the collisions list
                 
                 # when done colliding add collisions indicies to collided indices list
                 collided.extend(collisions) 
-                #print('collided' + collided) # testing purposes
         i += 1
         
     
@@ -152,24 +150,28 @@ def particleTemp(...):
     return
 """
 
-#done = 0
+done = 0
 
 # run animation
 while True:
     r = mag(starA.pos - starB.pos)
-    otherstar = starB
+    
+    # run Runge-Kutta on the stars
+    starother = starB
     rkStar(starA)
-    otherstar = starA
+    starother = starA
     rkStar(starB)
     
+    
+    # run Runge-Kutta on the particles
     rkParticles()
-    if len(particle_list) < 10:#2000: # this is not ultimately how we will do this
+    if len(particle_list) < 2000:#2000: # this is not ultimately how we will do this
         AddParticle()
     
     starA.trail.append(pos=starA.pos)
     starB.trail.append(pos=starB.pos)
 
-    #while not done: # to run the collision only once
+    #while not done:
      #   particleCol()
       #  done = 1
     
