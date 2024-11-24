@@ -7,7 +7,6 @@ scene = canvas(title = 'Particle Collisions in a Binary Star System', color = co
 
 # Define Globals
 G  = 6.67E-11 # gravitational constant
-
 AU = 1.5E11 # astronomical unit
 YEAR = 365.25*24*60*60 # year in seconds
 MS = 1.988400e20 # mass of the sun 
@@ -21,7 +20,6 @@ STARA_COLOR = vec(0.98, 0.98, 0.78) #rgb(250,250,200)
 STARB_COLOR = vec(0.98, 0.94, 0.59 ) #rgb(250,240,150)
 P_RADIUS = 4e6 # particle radius
 
-
 h = 2.0 # time step                            # from sample code
 L1 = 3.69E8 # distance to Lagrange Point 1            # from sample code
 L2= 2.11e8                                             # from sample code
@@ -34,15 +32,14 @@ starA.trail = curve(pos=starA.pos, color=starA.color) # do we want trails
 starB.trail = curve(pos=starB.pos, color=starB.color)
 # accretionDisk = # do we still want to do this? could do two transparent cylinders compounded together
 
-
 # set initial velocities
 starB.vel = 4.0*vector(0,+6.78e4,0)             # from sample code
 starA.vel = 4.0*vector(0,-6.78e4,0)*0.25        # from sample code
 
-
 # ancillaries
 t = 0 # time
 particle_list = []
+counter = 0 # for printing purposes
 
 # a function to determine the acceleration of a star
 ## ... --> ...
@@ -93,6 +90,43 @@ def AddParticle():
         ##
         particle_list.append(particle)
 
+# print particle velocites before and after a collison (for testing purposes)
+# vec, vec, vec, vec --> print()
+def printCollVels(v1i, v2i, v1f, v2f):
+    global counter
+    if counter >= 200000:
+        print('v1i is {0}, v2i is {1}, v1f is {2}, v2f is {3}'.format(v1i, v2i, v1f, v2f))
+        print('particle : vel-init <x,y,z>, vel-final <x,y,z> ')
+        print('one:   {0},   {1}'.format(v1i, v1f))
+        print('two:   {0},   {1}'.format(v2i, v2f))
+        print()
+        counter = 0
+    else:
+        counter += 1
+
+#Final velocities of particles in collisions
+# int, int --> void
+def velfinal(particleidx, otheridx):
+    # set inital velocites
+    v1i = particle_list[particleidx].vel
+    v2i = particle_list[otheridx].vel
+    ## 
+    
+    v1f = ((particle_list[particleidx].mass - particle_list[otheridx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[particleidx].vel \
+        + ((2*particle_list[otheridx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[otheridx].vel
+    particle_list[particleidx].vel = v1f
+    
+    #other particle final vel
+    v2f = ((particle_list[otheridx].mass - particle_list[particleidx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[otheridx].vel \
+        + ((2*particle_list[particleidx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[particleidx].vel
+    particle_list[otheridx].vel = v2f
+    
+    
+    ## print velocities (for testing purposes)
+    printCollVels(v1i, v2i, v1f, v2f)
+        
+    return
+
 # a function to check if the particles have collided
 ## ... --> ...
 def particleCol():
@@ -117,6 +151,10 @@ def particleCol():
             # collisions now has the indicies of all the particles colliding with particle1
             if len(collisions) > 1:
                 # calculate particle collision for all particles at the indicies in the collisions list
+                
+                #velocity change in elastic particle collisions
+                for k in range(0,len(collisions), 2):
+                    velfinal(collisions[k], collisions[k+1])
                 
                 # when done colliding add collisions indicies to collided indices list
                 collided.extend(collisions) 
@@ -153,9 +191,7 @@ def rkParticles():
 def particleTemp(...):
     return
 """
-
-done = 0
-
+        
 # run animation
 while True:
     r = mag(starA.pos - starB.pos)
@@ -175,10 +211,6 @@ while True:
     starA.trail.append(pos=starA.pos)
     starB.trail.append(pos=starB.pos)
 
-    #while not done:
-     #   particleCol()
-      #  done = 1
-    
     particleCol()
     
     rate(500) 
