@@ -16,17 +16,18 @@ H_MASS = 1.01*u # mass of a hydrogen atom
 MID_COLOR = vec(0.98, 0.59, 0.20) # color of particles when ambient temp : rgb(250,150, 0.20)
 HIGH_COLOR = vec(0.78, 0.00, 0.00) # color of particles when hot: rgb(200, 000, 000)
 LOW_COLOR = vec(0.98, 0.78, 0.00) # color of particles when cold: rgb(250, 200, 000)
-STARA_COLOR = vec(0.98, 0.98, 0.78) #rgb(250,250,200)
-STARB_COLOR = vec(0.98, 0.94, 0.59 ) #rgb(250,240,150)
+STARA_COLOR = vec(0.76, 0.81, 0.95) #rgb(193,207,242)
+STARB_COLOR = vec(0.70, 0.04, 0.20) #rgb(179,9,52)
 P_RADIUS = 4e6 # particle radius
+A_RADIUS = 6.6E6*15 # accretion disk radius
 
 h = 2.0 # time step                            # from sample code
 L1 = 3.69E8 # distance to Lagrange Point 1            # from sample code
 L2= 2.11e8                                             # from sample code
 
 # create scene objects
-starA = sphere(pos=vec(0,0,0), radius= 6.6E6, mass=1.5E30, color=STARA_COLOR, visible=True) # numbers from sample code
-starB = sphere(pos=vec(5.80E8,0,0), radius= 1.5E8, mass=3.75E29, color=STARB_COLOR, visible=True) # numbers from sample code
+starA = sphere(pos=vec(0,0,0), radius= 6.6E6, mass=1.5E30, color=STARA_COLOR, visible=1) # numbers from sample code
+starB = sphere(pos=vec(5.80E8,0,0), radius= 1.5E8, mass=3.75E29, color=STARB_COLOR, visible=1) # numbers from sample code
 # legend = # Eventually 
 starA.trail = curve(pos=starA.pos, color=starA.color) # do we want trails
 starB.trail = curve(pos=starB.pos, color=starB.color)
@@ -42,12 +43,12 @@ particle_list = []
 counter = 0 # for printing purposes
 
 # a function to determine the acceleration of a star
-## ... --> ...
+## vector --> vector
 def accStar(starpos):
     return -G*starother.mass*(starpos-starother.pos)/r**3
 
 # a function to run the Runge-Kutta alg on a star
-## ... --> ...
+## object --> void
 # borrowed from sample code
 def rkStar(star):
     k1v = h*accStar(star.pos)
@@ -64,38 +65,38 @@ def rkStar(star):
 
     star.vel += (k1v + 2.0*k2v + 2.0*k3v + k4v)/6.0
     star.pos += (k1x + 2.0*k2x + 2.0*k3x + k4x)/6.0
-    
 
-# a function to remove particles from the particle_list and to increase starB's mass
+# a function to 'remove' particles from the particle_list if it is out of range 
+# OR to 'remove' them and to increase starB's mass if they run into starB
+# NOTE: this really just makes the particle invisible
 ## ... --> ...
-"""
-def removeParticle(...):
-    return
-"""
+#def removeParticle():
+#    for particle in particle_list:
+#        if particle.pos
 
 # a function to add particles to the particle_list and to decrease starA's mass
 ## void --> void
 def AddParticle():
-    starA.mass = starA.mass - H_MASS*1e3 
+    particle_mass = H_MASS*1e3 # particle mass
     # This may not be how we want to create particles
-    Omega = 2.0*pi/P                                                            # from sample code
-    for i in range(0, 10):
-        particle = sphere(mass = H_MASS*1e3, radius = P_RADIUS, color = MID_COLOR)
-        particle.pos = starA.pos +0.6367*(starB.pos-starA.pos)                      # from sample code
+    Omega = 2.0*pi/P # angular velocity                                                   # from sample code
+    for i in range(0, 5):
+        particle = sphere(mass = particle_mass, radius = P_RADIUS, color = MID_COLOR)
+        particle.pos = starA.pos + 0.6367*(starB.pos-starA.pos) + vec(i*P_RADIUS*3, 0, 0)  # adjusted from sample code
         # set initial velocities
         particle.vel = vector(0,0,0)                                           # from sample code
-        particle.vel.x = -particle.pos.x*Omega*(1.0 + random())                # from sample code
+        particle.vel.x = -particle.pos.x*Omega*(1.0 + random())                # from sample code # v = radius*angular velocity
         particle.vel.y = particle.pos.y*Omega*(1.0 + random())                 # from sample code
         particle.vel.z = particle.pos.z*Omega*(1.0 + random())                 # from sample code
         ##
         particle_list.append(particle)
+        starA.mass = starA.mass - particle_mass # remove the mass of the particle from the star
 
 # print particle velocites before and after a collison (for testing purposes)
 # vec, vec, vec, vec --> print()
 def printCollVels(v1i, v2i, v1f, v2f):
     global counter
     if counter >= 200000:
-        print('v1i is {0}, v2i is {1}, v1f is {2}, v2f is {3}'.format(v1i, v2i, v1f, v2f))
         print('particle : vel-init <x,y,z>, vel-final <x,y,z> ')
         print('one:   {0},   {1}'.format(v1i, v1f))
         print('two:   {0},   {1}'.format(v2i, v2f))
@@ -107,60 +108,53 @@ def printCollVels(v1i, v2i, v1f, v2f):
 #Final velocities of particles in collisions
 # int, int --> void
 def velfinal(particleidx, otheridx):
-    # set inital velocites
+    # get masses, positions, inital velocites
+    m1 = particle_list[particleidx].mass
+    m2 = particle_list[otheridx].mass
+    r1 = particle_list[particleidx].pos
+    r2 = particle_list[otheridx].pos
     v1i = particle_list[particleidx].vel
     v2i = particle_list[otheridx].vel
     ## 
     
-    v1f = ((particle_list[particleidx].mass - particle_list[otheridx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[particleidx].vel \
-        + ((2*particle_list[otheridx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[otheridx].vel
+    v1f = v1i - ( (dot((v1i-v2i), (r1-r2))) / mag(r1-r2)**2 ) * (r1-r2) 
     particle_list[particleidx].vel = v1f
     
-    #other particle final vel
-    v2f = ((particle_list[otheridx].mass - particle_list[particleidx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[otheridx].vel \
-        + ((2*particle_list[particleidx].mass) / (particle_list[particleidx].mass + particle_list[otheridx].mass))*particle_list[particleidx].vel
+    v2f = v1i - ( (dot((v2i-v1i), (r2-r1))) / mag(r2-r1)**2 ) * (r2-r1)
     particle_list[otheridx].vel = v2f
     
-    
-    ## print velocities (for testing purposes)
-    printCollVels(v1i, v2i, v1f, v2f)
+    # print velocities (for testing purposes)
+    #printCollVels(v1i, v2i, v1f, v2f) # uncomment this to print
         
-    return
+    return        
 
 # a function to check if the particles have collided
 ## ... --> ...
 def particleCol():
     particleDiameter = P_RADIUS*2
-    collided = [] # list of indicies of the particles for which the collisions have been calculated
+    collisions = [] # list of indicies of the particles for which the collisions have been calculated
     
-    # this does check each particle pair for collisions, but it is so slow it breaks the animation
-    for i in range(0, len(particle_list)):         
-        if i not in collided: # make sure that the particle at this index has not already had a collision run on it
+    # find every colliding pair and add it to collisions
+    for i in range(0, len(particle_list)):
             particle1 = particle_list[i]
-        
-            collisions = [] # list of indicies of currently colliding particles  
-            collisions.append(i) # the index of colliding particle1
-            for j in range(i+1, len(particle_list)):
-                particle2 = particle_list[j]
+
+            particle1Circle = (particle1.pos.x - starA.pos.x)**2 + (particle1.pos.y - starA.pos.y)**2 
+            if particle1Circle <= A_RADIUS**2: # is particle1 in the accreation disk
+                #particle1.color = color.red # for testing
+                for j in range(i+1, len(particle_list)):
+                    particle2 = particle_list[j]
                     
-                if (particle2.pos.x - particleDiameter <= particle1.pos.x <= particle2.pos.x + particleDiameter) \
-                        and (particle2.pos.y - particleDiameter <= particle1.pos.y <= particle2.pos.y + particleDiameter) \
-                            and (particle2.pos.z - particleDiameter <= particle1.pos.z <= particle2.pos.z + particleDiameter):
-                    collisions.append(j) # the index of colliding particle2
-                    
-            # collisions now has the indicies of all the particles colliding with particle1
-            if len(collisions) > 1:
-                # calculate particle collision for all particles at the indicies in the collisions list
-                
-                #velocity change in elastic particle collisions
-                for k in range(0,len(collisions), 2):
-                    velfinal(collisions[k], collisions[k+1])
-                
-                # when done colliding add collisions indicies to collided indices list
-                collided.extend(collisions) 
-        i += 1
+                    particle2Circle = (particle2.pos.x - starA.pos.x)**2 + (particle2.pos.y - starA.pos.y)**2 
+                    if particle2Circle <= A_RADIUS**2: # is particle2 in the accreation disk
+                        if mag(particle2.pos - particle1.pos) <= particleDiameter: 
+                            collisions.append([i,j]) # the index of colliding pair [particle1, particle2]
+            #else: particle1.color = color.blue # for testing
         
-    
+    # collisions now has the indicies of all the particles colliding with particle1
+    if len(collisions) > 1:
+        # calculate velocity chage due to elastic particle collision for all particles at the indicies in the collisions list
+        for ij in collisions:
+            velfinal(ij[0], ij[1])
 
 
 # a function to run the Runge-Kutta alg on particles       # from the sample code
@@ -169,7 +163,7 @@ def rkParticles():
     for particle in particle_list:  
         rA = mag(particle.pos - starA.pos)
         rB = mag(particle.pos - starB.pos)
-        if rA > L1/100 and rB > L2/100:
+        if rA > L1/100 and rB > L2/100: # I'm pretty sure this statement is only false once the particle's shoot out
             acc_p = G*starA.mass*(starA.pos - particle.pos)/rA**3 + G*starB.mass*(starB.pos - particle.pos)/rB**3
             k1v = h*acc_p
             k1x = h*particle.vel
@@ -181,16 +175,17 @@ def rkParticles():
             k4x = h*(particle.vel + k3v)
             particle.vel += (k1v + 2.0*k2v + 2.0*k3v + k4v)/6.0
             particle.pos += (k1x + 2.0*k2x + 2.0*k3x + k4x)/6.0
+
         
 
 
 
-""" Eventually:
+# Eventually:
 # a function to check particle temperature and change their color
 ## ... --> ...
-def particleTemp(...):
-    return
-"""
+#def particleTemp(...):
+ #   return
+
         
 # run animation
 while True:
@@ -201,17 +196,16 @@ while True:
     rkStar(starA)
     starother = starA
     rkStar(starB)
-    
-    
+
     # run Runge-Kutta on the particles
     rkParticles()
-    if len(particle_list) < 2000:#2000: # this is not ultimately how we will do this
+    if len(particle_list) < 200:#2000: # this is not ultimately how we will do this
         AddParticle()
     
     starA.trail.append(pos=starA.pos)
     starB.trail.append(pos=starB.pos)
 
+    # start calculating collisions
     particleCol()
-    
-    rate(500) 
-    
+        
+    rate(50) #500
